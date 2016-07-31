@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE struts PUBLIC "-//Apache Software Foundation//DTD Struts Configuration 2.1//EN" "http://struts.apache.org/dtds/struts-2.1.dtd">
+<struts>
+	<package name="default" namespace="/" extends="struts-default">
+		<interceptors>
+			<interceptor name="illegalCharacterInterceptor" class="com.ming.util.IllegalCharacterInterceptor" />
+			<interceptor name="permissionInterceptor" class="com.ming.util.PermissionInterceptor" />
+			<interceptor-stack name="myStack">
+				<interceptor-ref name="permissionInterceptor"></interceptor-ref>
+				<interceptor-ref name="illegalCharacterInterceptor"></interceptor-ref>
+				<interceptor-ref name="defaultStack"></interceptor-ref>
+			</interceptor-stack>
+		</interceptors>
+		<default-interceptor-ref name="myStack"></default-interceptor-ref>
+		<global-results>
+			<result name="login" type="redirect">/index.html</result>
+			<result name="nopower">/error/nopower.jsp</result>
+		</global-results>
+		<action name="user_*" class="com.ming.action.UserAction" method="{1}"></action>
+		<action name="role_*" class="com.ming.action.RoleAction" method="{1}"></action>
+		<action name="billForIn_*" class="com.ming.action.BillForInAction" method="{1}"></action>
+		<action name="billForOut_*" class="com.ming.action.BillForOutAction" method="{1}"></action>
+		<action name="menu_*" class="com.ming.action.MenuAction" method="{1}"></action>
+		<action name="message_*" class="com.ming.action.MessageAction" method="{1}"></action>
+	</package>
+</struts>
+<!-- By Ming -->

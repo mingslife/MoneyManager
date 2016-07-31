@@ -1,0 +1,134 @@
+<div class="row toolbar">
+	<div class="col-md-3">
+		<button class="btn btn-default" title="新增" data-toggle="modal" data-target="#billForIn-modal" ng-click="add()">
+			<span class="glyphicon glyphicon-plus"></span>
+		</button>
+	</div>
+	<div class="col-md-9 hidden-xs">
+		<form class="form form-inline text-right">
+			<div class="form-group">
+				<label for="toNameSearch">接收人</label>
+				<input type="text" class="form-control" id="toNameSearch" maxlength="25" ng-model="toName" />
+			</div>
+			<button class="btn btn-default search" title="搜索" ng-click="init()">
+				<span class="glyphicon glyphicon-search"></span>
+			</button>
+		</form>
+	</div>
+</div>
+<div class="row">
+	<div class="col-md-12">
+		<div class="table-responsive">
+			<table class="table table-bordered table-hover">
+				<thead>
+					<tr>
+						<th>#</th>
+						<th>日期</th>
+						<th>金额（元）</th>
+						<th>经手人</th>
+						<th>接收人</th>
+						<th>记录人</th>
+						<th>创建日期</th>
+						<th>备注</th>
+						<th>操作</th>
+					</tr>
+				</thead>
+				<tbody>
+					<tr ng-repeat="billForIn in billForIns">
+						<td class="text-center" style="width:60px;max-width:60px;" title="{{(curPage-1)*limit+$index+1}}" ng-bind="(curPage-1)*limit+$index+1"></td>
+						<td class="text-center" style="width:100px;max-width:100px;" ng-bind="dateFormat(billForIn.date)"></td>
+						<td class="text-right" style="width:100px;max-width:100px;" title="{{billForIn.amount.toFixed(2)}}" ng-bind="billForIn.amount.toFixed(2)"></td>
+						<td style="width:100px;max-width:100px;" title="{{billForIn.fromName}}" ng-bind="billForIn.fromName"></td>
+						<td style="width:100px;max-width:100px;" title="{{billForIn.toName}}" ng-bind="billForIn.toName"></td>
+						<td style="width:100px;max-width:100px;" title="{{billForIn.recordName}}" ng-bind="billForIn.recordName"></td>
+						<td class="text-center" style="width:100px;max-width:100px;" ng-bind="dateFormat(billForIn.createDate)"></td>
+						<td style="width:160px;max-width:160px;" title="{{billForIn.remark}}" ng-bind="billForIn.remark"></td>
+						<td class="text-center">
+							<button class="btn btn-default btn-primary btn-sm" data-toggle="modal" data-target="#billForIn-modal" ng-click="edit(billForIn.id)">编辑</button>
+							<button class="btn btn-default btn-danger btn-sm" ng-click="delete(billForIn.id)">删除</button>
+						</td>
+					</tr>
+					<tr ng-show="!billForIns||billForIns.length==0">
+						<td class="text-center text-muted" colspan="9">无数据</td>
+					</tr>
+				</tbody>
+			</table>
+			<div class="text-muted sum" ng-hide="!billForIns||billForIns.length==0">
+				数据总数：<span ng-bind="total+'条'"></span>
+				总计金额：<span ng-bind="totalAmount.toFixed(2)+'元'"></span>
+				财务余额：<span ng-bind="totalMoney.toFixed(2)+'元'"></span>
+				<span ng-show="needMoney">距离全部付清还需：<span ng-bind="needMoney.toFixed(2)+'元'"></span></span>
+			</div>
+		</div>
+	</div>
+</div>
+<div class="row">
+	<div class="col-md-12">
+		<div class="btn-group pull-right" role="group" aria-label="分页">
+			<button type="button" class="btn btn-default" ng-disabled="!curPage||curPage==1||pages==0" ng-click="firstPage()">&laquo;</button>
+			<button type="button" class="btn btn-default" ng-disabled="!curPage||curPage==1||pages==0" ng-click="prevPage()">&lsaquo;</button>
+			<button type="button" class="btn btn-default" ng-class="{true:'active'}[curPage==pager[0]]" ng-bind="pager[0]" ng-show="pager[0]&&pages!=0" ng-click="changePage(pager[0])">1</button>
+			<button type="button" class="btn btn-default" ng-class="{true:'active'}[curPage==pager[1]]" ng-bind="pager[1]" ng-show="pager[1]" ng-click="changePage(pager[1])">2</button>
+			<button type="button" class="btn btn-default" ng-class="{true:'active'}[curPage==pager[2]]" ng-bind="pager[2]" ng-show="pager[2]" ng-click="changePage(pager[2])">3</button>
+			<button type="button" class="btn btn-default" ng-disabled="curPage==pages||pages==0" ng-click="nextPage()">&rsaquo;</button>
+			<button type="button" class="btn btn-default" ng-disabled="curPage==pages||pages==0" ng-click="lastPage()">&raquo;</button>
+		</div>
+		<div class="text-muted pull-right page">共<span ng-bind="pages||0"></span>页</div>
+	</div>
+</div>
+
+<div class="modal fade" id="billForIn-modal" tabindex="-1" role="dialog" aria-labelledby="入账模态框">
+	<div class="modal-dialog">
+		<div class="modal-content">
+			<div class="modal-header">
+				<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+				<h4 class="modal-title" id="modalTitle" ng-bind="modalTitle"></h4>
+			</div>
+			<div class="modal-body">
+				<form class="form" name="billForInForm">
+					<div class="form-group has-feedback" ng-class="{true:'has-error',false:'has-success'}[billForInForm.date.$invalid]">
+						<label for="date">日期</label>
+						<input type="date" class="form-control" id="date" name="date" required ng-model="billForIn.date" />
+						<span class="glyphicon form-control-feedback" ng-class="{true:'glyphicon-remove',false:'glyphicon-ok'}[billForInForm.date.$invalid]"></span>
+						<p class="help-block" ng-show="billForInForm.date.$invalid">必填项</p>
+					</div>
+					<div class="form-group has-feedback" ng-class="{true:'has-error',false:'has-success'}[billForInForm.amount.$invalid]">
+						<label for="amount">金额（元）</label>
+						<input type="number" class="form-control" id="amount" name="amount" maxlength="10" required ng-model="billForIn.amount" />
+						<span class="glyphicon form-control-feedback" ng-class="{true:'glyphicon-remove',false:'glyphicon-ok'}[billForInForm.amount.$invalid]"></span>
+						<p class="help-block" ng-show="billForInForm.amount.$invalid">必填项，只允许数值</p>
+					</div>
+					<div class="form-group has-feedback" ng-class="{true:'has-error',false:'has-success'}[billForInForm.fromId.$invalid]">
+						<label for="fromId">经手人</label>
+						<select class="form-control" id="fromId" name="fromId" ng-options="user.id as user.userName for user in users" required ng-model="billForIn.fromId"></select>
+						<span class="glyphicon form-control-feedback" ng-class="{true:'glyphicon-remove',false:'glyphicon-ok'}[billForInForm.fromId.$invalid]"></span>
+						<p class="help-block" ng-show="billForInForm.fromId.$invalid">必填项</p>
+					</div>
+					<div class="form-group has-feedback" ng-class="{true:'has-error',false:'has-success'}[billForInForm.toId.$invalid]">
+						<label for="toId">接收人</label>
+						<select class="form-control" id="toId" name="toId" ng-options="user.id as user.userName for user in users" required ng-model="billForIn.toId"></select>
+						<span class="glyphicon form-control-feedback" ng-class="{true:'glyphicon-remove',false:'glyphicon-ok'}[billForInForm.toId.$invalid]"></span>
+						<p class="help-block" ng-show="billForInForm.toId.$invalid">必填项</p>
+					</div>
+					<div class="form-group has-feedback" ng-class="{true:'has-error',false:'has-success'}[billForInForm.recordId.$invalid]">
+						<label for="recordId">记录人</label>
+						<select class="form-control" id="recordId" name="recordId" ng-options="user.id as user.userName for user in users" required ng-model="billForIn.recordId"></select>
+						<span class="glyphicon form-control-feedback" ng-class="{true:'glyphicon-remove',false:'glyphicon-ok'}[billForInForm.recordId.$invalid]"></span>
+						<p class="help-block" ng-show="billForInForm.recordId.$invalid">必填项</p>
+					</div>
+					<div class="form-group has-feedback" ng-class="{true:'has-error',false:'has-success'}[billForInForm.remark.$invalid]">
+						<label for="remark">备注</label>
+						<input type="text" class="form-control" id="remark" name="remark" placeholder="选填项" maxlength="127" ng-model="billForIn.remark" />
+						<span class="glyphicon form-control-feedback" ng-class="{true:'glyphicon-remove',false:'glyphicon-ok'}[billForInForm.remark.$invalid]"></span>
+						<p class="help-block" ng-show="billForInForm.remark.$invalid">选填项</p>
+					</div>
+				</form>
+			</div>
+			<div class="modal-footer">
+				<button type="button" class="btn btn-primary" ng-disabled="billForInForm.$invalid" ng-click="ok()">保存</button>
+				<button type="button" class="btn btn-default" data-dismiss="modal">取消</button>
+			</div>
+		</div>
+	</div>
+</div>
+<!-- By Ming -->

@@ -1,0 +1,15 @@
+@charset "UTF-8";
+
+body {
+	font-family: "Microsoft Yahei",微软雅黑,"Microsoft JhengHei",华文细黑,STHeiti,MingLiu;
+}
+th {
+	text-align: center;
+}
+td {
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+
+/* By Ming */

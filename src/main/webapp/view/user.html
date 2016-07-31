@@ -1,0 +1,158 @@
+<div class="row toolbar">
+	<div class="col-md-3">
+		<button class="btn btn-default" title="新增" data-toggle="modal" data-target="#user-modal" ng-click="add()">
+			<span class="glyphicon glyphicon-plus"></span>
+		</button>
+	</div>
+	<div class="col-md-9 hidden-xs">
+		<form class="form form-inline text-right">
+			<div class="form-group">
+				<label for="userNameSearch">用户名</label>
+				<input type="text" class="form-control" id="userNameSearch" maxlength="25" ng-model="userName" />
+			</div>
+			<button class="btn btn-default search" title="搜索" ng-click="init()">
+				<span class="glyphicon glyphicon-search"></span>
+			</button>
+		</form>
+	</div>
+</div>
+<div class="row">
+	<div class="col-md-12">
+		<div class="table-responsive">
+			<table class="table table-bordered table-hover">
+				<thead>
+					<tr>
+						<th>#</th>
+						<th>用户名</th>
+						<th>性别</th>
+						<th>生日</th>
+						<th>Email</th>
+						<th>QQ</th>
+						<th>角色</th>
+						<th>状态</th>
+						<th>创建时间</th>
+						<th>操作</th>
+					</tr>
+				</thead>
+				<tbody>
+					<tr ng-repeat="user in users">
+						<td class="text-center" style="width:60px;max-width:60px;" title="{{(curPage-1)*limit+$index+1}}" ng-bind="(curPage-1)*limit+$index+1"></td>
+						<td style="width:100px;max-width:100px;" title="{{user.userName}}" ng-bind="user.userName"></td>
+						<td class="text-center" style="width:60px;max-width:60px;" ng-bind="user.sex==0?'男':'女'"></td>
+						<td class="text-center" style="width:100px;max-width:100px;" ng-bind="dateFormat(user.birthday)"></td>
+						<td style="width:180px;max-width:180px;" title="{{user.email}}" ng-bind="user.email"></td>
+						<td style="width:120px;max-width:120px;" title="{{user.qq}}" ng-bind="user.qq"></td>
+						<td class="text-center" style="width:100px;max-width:100px;" ng-bind="roleFormat(user.roleId)"></td>
+						<td class="text-center" style="width:60px;max-width:60px;" ng-bind="user.isActive==0?'未激活':'已激活'"></td>
+						<td class="text-center" style="width:100px;max-width:100px;" ng-bind="dateFormat(user.createDate)"></td>
+						<td class="text-center">
+							<button class="btn btn-default btn-primary btn-sm" data-toggle="modal" data-target="#user-modal" ng-click="edit(user.id)">编辑</button>
+							<button class="btn btn-default btn-danger btn-sm" ng-click="delete(user.id)">删除</button>
+						</td>
+					</tr>
+					<tr ng-show="!users||users.length==0">
+						<td class="text-center text-muted" colspan="10">无数据</td>
+					</tr>
+				</tbody>
+			</table>
+			<div class="text-muted sum" ng-hide="!users||users.length==0">
+				数据总数：<span ng-bind="total+'条'"></span>
+			</div>
+		</div>
+	</div>
+</div>
+<div class="row">
+	<div class="col-md-12">
+		<div class="btn-group pull-right" role="group" aria-label="分页">
+			<button type="button" class="btn btn-default" ng-disabled="!curPage||curPage==1||pages==0" ng-click="firstPage()">&laquo;</button>
+			<button type="button" class="btn btn-default" ng-disabled="!curPage||curPage==1||pages==0" ng-click="prevPage()">&lsaquo;</button>
+			<button type="button" class="btn btn-default" ng-class="{true:'active'}[curPage==pager[0]]" ng-bind="pager[0]" ng-show="pager[0]&&pages!=0" ng-click="changePage(pager[0])">1</button>
+			<button type="button" class="btn btn-default" ng-class="{true:'active'}[curPage==pager[1]]" ng-bind="pager[1]" ng-show="pager[1]" ng-click="changePage(pager[1])">2</button>
+			<button type="button" class="btn btn-default" ng-class="{true:'active'}[curPage==pager[2]]" ng-bind="pager[2]" ng-show="pager[2]" ng-click="changePage(pager[2])">3</button>
+			<button type="button" class="btn btn-default" ng-disabled="curPage==pages||pages==0" ng-click="nextPage()">&rsaquo;</button>
+			<button type="button" class="btn btn-default" ng-disabled="curPage==pages||pages==0" ng-click="lastPage()">&raquo;</button>
+		</div>
+		<div class="text-muted pull-right page">共<span ng-bind="pages||0"></span>页</div>
+	</div>
+</div>
+
+<div class="modal fade" id="user-modal" tabindex="-1" role="dialog" aria-labelledby="用户模态框">
+	<div class="modal-dialog">
+		<div class="modal-content">
+			<div class="modal-header">
+				<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+				<h4 class="modal-title" id="modalTitle" ng-bind="modalTitle"></h4>
+			</div>
+			<div class="modal-body">
+				<form class="form" name="userForm">
+					<div class="form-group has-feedback" ng-class="{true:'has-error',false:'has-success'}[userForm.loginName.$invalid]" ng-show="mode=='save'">
+						<label for="loginName">登录名</label>
+						<input type="text" class="form-control" id="loginName" name="loginName" maxlength="16" ng-required="mode=='save'" ng-pattern="/^\w+$/" ng-model="user.loginName" />
+						<span class="glyphicon form-control-feedback" ng-class="{true:'glyphicon-remove',false:'glyphicon-ok'}[userForm.loginName.$invalid]"></span>
+						<p class="help-block" ng-show="userForm.loginName.$invalid">必填项，只允许数字、英文和下划线</p>
+					</div>
+					<div class="form-group has-feedback" ng-class="{true:'has-error',false:'has-success'}[userForm.userName.$invalid]">
+						<label for="userName">用户名</label>
+						<input type="text" class="form-control" id="userName" name="userName" maxlength="25" required ng-model="user.userName" />
+						<span class="glyphicon form-control-feedback" ng-class="{true:'glyphicon-remove',false:'glyphicon-ok'}[userForm.userName.$invalid]"></span>
+						<p class="help-block" ng-show="userForm.userName.$invalid">必填项</p>
+					</div>
+					<div class="form-group has-feedback" ng-class="{true:'has-error',false:'has-success'}[userForm.password.$invalid]">
+						<label for="password">密码</label>
+						<input type="password" class="form-control" id="password" name="password" placeholder="{{mode=='edit'?'选填项，若不修改密码请留空':''}}" maxlength="16" ng-required="mode=='save'" ng-pattern="/^\w+$/" ng-model="user.password" />
+						<span class="glyphicon form-control-feedback" ng-class="{true:'glyphicon-remove',false:'glyphicon-ok'}[userForm.password.$invalid]"></span>
+						<p class="help-block" ng-show="userForm.password.$invalid&&mode=='save'">必填项，只允许数字、英文和下划线</p>
+						<p class="help-block" ng-show="userForm.password.$invalid&&mode=='edit'">选填项，只允许数字、英文和下划线</p>
+					</div>
+					<div class="form-group has-feedback" ng-class="{true:'has-error',false:'has-success'}[userForm.sex.$invalid]">
+						<label for="sex">性别</label>
+						<select class="form-control" id="sex" name="sex" required ng-model="user.sex">
+							<option value="0">男</option>
+							<option value="1">女</option>
+						</select>
+						<span class="glyphicon form-control-feedback" ng-class="{true:'glyphicon-remove',false:'glyphicon-ok'}[userForm.sex.$invalid]"></span>
+						<p class="help-block" ng-show="userForm.sex.$invalid">必填项</p>
+					</div>
+					<div class="form-group has-feedback" ng-class="{true:'has-error',false:'has-success'}[userForm.birthday.$invalid]">
+						<label for="birthday">生日</label>
+						<input type="date" class="form-control" id="birthday" name="birthday" required ng-model="user.birthday" />
+						<span class="glyphicon form-control-feedback" ng-class="{true:'glyphicon-remove',false:'glyphicon-ok'}[userForm.birthday.$invalid]"></span>
+						<p class="help-block" ng-show="userForm.birthday.$invalid">必填项</p>
+					</div>
+					<div class="form-group has-feedback" ng-class="{true:'has-error',false:'has-success'}[userForm.email.$invalid]">
+						<label for="email">Email</label>
+						<input type="email" class="form-control" id="email" name="email" maxlength="127" required ng-model="user.email" />
+						<span class="glyphicon form-control-feedback" ng-class="{true:'glyphicon-remove',false:'glyphicon-ok'}[userForm.email.$invalid]"></span>
+						<p class="help-block" ng-show="userForm.email.$invalid">必填项，注意Email格式</p>
+					</div>
+					<div class="form-group has-feedback" ng-class="{true:'has-error',false:'has-success'}[userForm.qq.$invalid]">
+						<label for="qq">QQ</label>
+						<input type="text" class="form-control" id="qq" name="qq" placeholder="选填项" maxlength="25" ng-pattern="/[1-9][0-9]{4,}/" ng-model="user.qq" />
+						<span class="glyphicon form-control-feedback" ng-class="{true:'glyphicon-remove',false:'glyphicon-ok'}[userForm.qq.$invalid]"></span>
+						<p class="help-block" ng-show="userForm.qq.$invalid">选填项，注意QQ格式</p>
+					</div>
+					<div class="form-group has-feedback" ng-class="{true:'has-error',false:'has-success'}[userForm.roleId.$invalid]">
+						<label for="roleId">用户角色</label>
+						<select class="form-control" id="roleId" name="roleId" ng-options="role.roleId as role.roleName for role in roles" required ng-model="user.roleId"></select>
+						<span class="glyphicon form-control-feedback" ng-class="{true:'glyphicon-remove',false:'glyphicon-ok'}[userForm.roleId.$invalid]"></span>
+						<p class="help-block" ng-show="userForm.roleId.$invalid">必填项</p>
+					</div>
+					<div class="form-group has-feedback" ng-class="{true:'has-error',false:'has-success'}[userForm.isActive.$invalid]">
+						<label for="isActive">状态</label>
+						<select class="form-control" id="isActive" name="isActive" required ng-model="user.isActive">
+							<option value="0">未激活</option>
+							<option value="1">已激活</option>
+						</select>
+						<span class="glyphicon form-control-feedback" ng-class="{true:'glyphicon-remove',false:'glyphicon-ok'}[userForm.isActive.$invalid]"></span>
+						<p class="help-block" ng-show="userForm.isActive.$invalid">必填项</p>
+					</div>
+				</form>
+			</div>
+			<div class="modal-footer">
+				<button type="button" class="btn btn-primary" ng-disabled="userForm.$invalid" ng-click="ok()">保存</button>
+				<button type="button" class="btn btn-default" data-dismiss="modal">取消</button>
+			</div>
+		</div>
+	</div>
+</div>
+<!-- By Ming -->

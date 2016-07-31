@@ -1,0 +1,47 @@
+<div class="row">
+	<div class="col-md-12">
+		<h3>财务管理系统</h3>
+		<p>感谢您的使用！</p>
+		<address>
+			作者：<strong>黄则鸣</strong><br />
+			Email：<a href="mailto:642203604@qq.com">642203604@qq.com</a>
+		</address>
+		<button class="btn btn-primary" data-toggle="modal" data-target="#reply-modal">意见反馈</button>
+	</div>
+</div>
+
+<div class="modal fade" id="reply-modal" tabindex="-1" role="dialog" aria-labelledby="意见反馈模态框">
+	<div class="modal-dialog" role="document">
+		<div class="modal-content">
+			<div class="modal-header">
+				<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+				<h4 class="modal-title" id="replyModalTitle">意见反馈</h4>
+			</div>
+			<div class="modal-body">
+				<form class="form" name="replyForm">
+					<div class="form-group has-feedback" ng-class="{true:'has-error'}[replyForm.replyContent.$invalid]">
+						<label for="replyContent">反馈内容</label>
+						<textarea class="form-control" id="replyContent" name="replyContent" maxlength="127" minlength="15" required ng-model="replyContent"></textarea>
+						<p class="help-block">系统将以匿名的形式发送给超级管理员和网站管理员</p>
+						<p class="help-block" ng-show="replyForm.replyContent.$invalid">必填项，字数要求在15字到127字</p>
+					</div>
+					<div class="form-group has-feedback" ng-class="{true:'has-error'}[replyForm.validCode.$invalid]">
+						<label for="validCodeReply">验证码</label>
+						<div class="input-group">
+							<input type="text" class="form-control" id="validCodeReply" name="validCode" maxlength="5" minlength="5" required ng-model="validCode" />
+							<div class="input-group-addon" title="看不清，换一张" ng-click="changeValidCode()">
+								<img src="kaptcha.jpg?timestamp={{timestamp}}" alt="验证码" width="80" height="20" />
+							</div>
+						</div>
+						<p class="help-block" ng-show="replyForm.validCode.$invalid">必填项，请输入5位验证码</p>
+					</div>
+				</form>
+			</div>
+			<div class="modal-footer">
+				<button type="button" class="btn btn-primary" ng-disabled="replyForm.$invalid" ng-click="submitReply()">提交</button>
+				<button type="button" class="btn btn-default" data-dismiss="modal" ng-click="resetReply()">取消</button>
+			</div>
+		</div>
+	</div>
+</div>
+<!-- By Ming -->

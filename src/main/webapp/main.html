@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="zh-CN" ng-app="app">
+	<head>
+		<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+		<meta http-equiv="X-UA-Compatible" content="IE=edge, chrome=1" />
+		<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
+		<title>财务管理系统</title>
+		<link rel="stylesheet" type="text/css" href="plugins/bootstrap-3.3.2/css/bootstrap.min.css" />
+		<link rel="stylesheet" type="text/css" href="css/common/custom.css" />
+		<link rel="stylesheet" type="text/css" href="css/main.css" />
+	</head>
+
+	<body ng-controller="mainController">
+		<nav class="navbar navbar-default navbar-fixed-top">
+			<div class="container-fluid">
+				<div class="navbar-header">
+					<button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target=".navbar-collapse">
+						<span class="sr-only">切换导航</span>
+						<span class="icon-bar"></span>
+						<span class="icon-bar"></span>
+						<span class="icon-bar"></span>
+					</button>
+					<a class="navbar-brand" href="#/"><span class="glyphicon glyphicon-piggy-bank"></span> 财务管理系统</a>
+				</div>
+				<div class="navbar-collapse collapse">
+					<ul class="nav navbar-nav">
+						<li ng-class="{true:'active'}['/'+menu.href==currentPage]" ng-repeat="menu in menus"><a href="#/{{menu.href}}" ng-bind="menu.name"></a></li>
+					</ul>
+					<div class="navbar-right">
+						<div class="btn-group" role="group">
+							<button type="button" class="btn btn-default navbar-btn" title="报账" data-toggle="modal" data-target="#apply-modal" ng-click="resetBillForOut()">
+								<span class="glyphicon glyphicon-pencil"></span>
+							</button>
+							<button class="btn btn-default navbar-btn" title="消息中心" data-toggle="modal" data-target="#message-modal" ng-click="loadMessages()">
+								<span class="glyphicon glyphicon-comment"></span> <span ng-bind="messageNumber"></span>
+							</button>
+							<button class="btn btn-default navbar-btn" title="个人中心" data-toggle="modal" data-target="#self-modal" ng-click="loadSelf()">
+								<span class="glyphicon glyphicon-user"></span>
+							</button>
+							<button class="btn btn-default navbar-btn" title="注销" ng-click="logout()">
+								<span class="glyphicon glyphicon-log-out"></span>
+							</button>
+						</div>
+					</div>
+				</div>
+			</div>
+		</nav>
+
+		<div class="container" id="main">
+			<!-- <div class="alert" id="message-alert" style="display:none;"></div> -->
+
+			<div ng-view></div>
+		</div>
+
+		<footer class="footer">
+			<div class="container">
+				<p class="text-center text-muted">财务管理系统&nbsp;&copy;&nbsp;2015</p>
+			</div>
+		</footer>
+
+		<div class="modal fade" id="apply-modal" tabindex="-1" role="dialog" aria-labelledby="报账模态框">
+			<div class="modal-dialog">
+				<div class="modal-content">
+					<div class="modal-header">
+						<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+						<h4 class="modal-title" id="applyModalTitle">报账</h4>
+					</div>
+					<div class="modal-body">
+						<form class="form" name="applyForm">
+							<div class="form-group has-feedback" ng-class="{true:'has-error',false:'has-success'}[applyForm.date.$invalid]">
+								<label for="dateApply">日期</label>
+								<input type="date" class="form-control" id="dateApply" name="date" required ng-model="apply.date" />
+								<span class="glyphicon form-control-feedback" ng-class="{true:'glyphicon-remove',false:'glyphicon-ok'}[applyForm.date.$invalid]"></span>
+								<p class="help-block" ng-show="applyForm.date.$invalid">必填项</p>
+							</div>
+							<div class="form-group has-feedback" ng-class="{true:'has-error',false:'has-success'}[applyForm.event.$invalid]">
+								<label for="eventApply">事项</label>
+								<input type="text" class="form-control" id="eventApply" name="event" maxlength="127" required ng-model="apply.event" />
+								<span class="glyphicon form-control-feedback" ng-class="{true:'glyphicon-remove',false:'glyphicon-ok'}[applyForm.event.$invalid]"></span>
+								<p class="help-block" ng-show="applyForm.event.$invalid">必填项</p>
+							</div>
+							<div class="form-group has-feedback" ng-class="{true:'has-error',false:'has-success'}[applyForm.amount.$invalid]">
+								<label for="amountApply">金额（元）</label>
+								<input type="number" class="form-control" id="amountApply" name="amount" maxlength="10" required ng-model="apply.amount" />
+								<span class="glyphicon form-control-feedback" ng-class="{true:'glyphicon-remove',false:'glyphicon-ok'}[applyForm.amount.$invalid]"></span>
+								<p class="help-block" ng-show="applyForm.amount.$invalid">必填项，只允许数值</p>
+							</div>
+							<div class="form-group has-feedback" ng-class="{true:'has-error',false:'has-success'}[applyForm.remark.$invalid]">
+								<label for="remarkApply">备注</label>
+								<input type="text" class="form-control" id="remarkApply" name="remark" placeholder="选填项" maxlength="127" ng-model="apply.remark" />
+								<span class="glyphicon form-control-feedback" ng-class="{true:'glyphicon-remove',false:'glyphicon-ok'}[applyForm.remark.$invalid]"></span>
+								<p class="help-block" ng-show="applyForm.remark.$invalid">选填项</p>
+							</div>
+							<div class="form-group has-feedback" ng-class="{true:'has-error'}[applyForm.validCode.$invalid]">
+								<label for="validCodeApply">验证码</label>
+								<div class="input-group">
+									<input type="text" class="form-control" id="validCodeApply" name="validCode" maxlength="5" minlength="5" required ng-model="apply.validCode" />
+									<div class="input-group-addon" title="看不清，换一张" ng-click="changeValidCode()">
+										<img src="kaptcha.jpg?timestamp={{timestamp}}" alt="验证码" width="80" height="20" />
+									</div>
+								</div>
+								<p class="help-block" ng-show="applyForm.validCode.$invalid">必填项，请输入5位验证码</p>
+							</div>
+						</form>
+					</div>
+					<div class="modal-footer">
+						<button type="button" class="btn btn-primary" ng-disabled="applyForm.$invalid" ng-click="applyBillForOut()">提交</button>
+						<button type="button" class="btn btn-default" data-dismiss="modal">取消</button>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<div class="modal fade" id="message-modal" tabindex="-1" role="dialog" aria-labelledby="消息中心模态框">
+			<div class="modal-dialog">
+				<div class="modal-content">
+					<div class="modal-header">
+						<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+						<h4 class="modal-title" id="messageModalTitle">消息中心</h4>
+					</div>
+					<div class="modal-body">
+						<div class="alert fade in" ng-class="alertType(message.type)" ng-repeat="message in messages">
+							<button type="button" class="close" data-dismiss="alert" aria-label="删除" title="删除" ng-click="deleteMessage(message.id)">
+								<span aria-hidden="true">&times;</span>
+							</button>
+							<p><span ng-bind="dateTimeFormat(message.createTime)"></span> <strong ng-bind="message.content"></strong></p>
+						</div>
+						<p class="text-center text-muted" ng-show="messages&&messages.length==0">无未读信息</p>
+					</div>
+					<div class="modal-footer">
+						<button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<div class="modal fade" id="self-modal" tabindex="-1" role="dialog" aria-labelledby="个人中心模态框">
+			<div class="modal-dialog">
+				<div class="modal-content">
+					<div class="modal-header">
+						<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+						<h4 class="modal-title" id="selfModalTitle">个人中心</h4>
+					</div>
+					<div class="modal-body">
+						<form class="form" name="selfForm">
+							<div class="form-group">
+								<label for="userNameSelf">用户名</label>
+								<input type="text" class="form-control" id="userNameSelf" disabled ng-model="self.userName" />
+							</div>
+							<div class="form-group">
+								<label for="sexSelf">性别</label>
+								<select class="form-control" id="sexSelf" name="sex" ng-model="self.sex">
+									<option value="0">男</option>
+									<option value="1">女</option>
+								</select>
+							</div>
+							<div class="form-group has-feedback" ng-class="{true:'has-error',false:'has-success'}[selfForm.birthday.$invalid]">
+								<label for="birthdaySelf">生日</label>
+								<input type="date" class="form-control" id="birthdaySelf" name="birthday" required ng-model="self.birthday" />
+								<span class="glyphicon form-control-feedback" ng-class="{true:'glyphicon-remove',false:'glyphicon-ok'}[selfForm.birthday.$invalid]"></span>
+								<p class="help-block" ng-show="selfForm.birthday.$invalid">必填项</p>
+							</div>
+							<div class="form-group has-feedback" ng-class="{true:'has-error',false:'has-success'}[selfForm.email.$invalid]">
+								<label for="emailSelf">Email</label>
+								<input type="email" class="form-control" id="emailSelf" name="email" maxlength="127" required ng-model="self.email" />
+								<span class="glyphicon form-control-feedback" ng-class="{true:'glyphicon-remove',false:'glyphicon-ok'}[selfForm.email.$invalid]"></span>
+								<p class="help-block" ng-show="selfForm.email.$invalid">必填项，注意Email格式</p>
+							</div>
+							<div class="form-group has-feedback" ng-class="{true:'has-error',false:'has-success'}[selfForm.qq.$invalid]">
+								<label for="qqSelf">QQ</label>
+								<input type="text" class="form-control" id="qqSelf" name="qq" placeholder="选填项" maxlength="25" ng-pattern="/[1-9][0-9]{4,}/" ng-model="self.qq" />
+								<span class="glyphicon form-control-feedback" ng-class="{true:'glyphicon-remove',false:'glyphicon-ok'}[selfForm.qq.$invalid]"></span>
+								<p class="help-block" ng-show="selfForm.qq.$invalid">选填项，注意QQ格式</p>
+							</div>
+							<div class="form-group">
+								<label for="roleIdSelf">用户角色</label>
+								<select class="form-control" id="roleIdSelf" disabled ng-options="role.roleId as role.roleName for role in roles" ng-model="self.roleId"></select>
+							</div>
+							<div class="form-group has-feedback" ng-class="{true:'has-error',false:'has-success'}[selfForm.oldPassword.$invalid]" ng-show="changePassword">
+								<label for="oldPasswordSelf">旧密码</label>
+								<input type="password" class="form-control" id="oldPasswordSelf" name="oldPassword" maxlength="16" ng-required="changePassword" ng-pattern="/^\w+$/" ng-model="self.oldPassword" />
+								<span class="glyphicon form-control-feedback" ng-class="{true:'glyphicon-remove',false:'glyphicon-ok'}[selfForm.oldPassword.$invalid]"></span>
+								<p class="help-block" ng-show="selfForm.oldPassword.$invalid">必填项，只允许数字、英文和下划线</p>
+							</div>
+							<div class="form-group has-feedback" ng-class="{true:'has-error',false:'has-success'}[selfForm.newPassword.$invalid]" ng-show="changePassword">
+								<label for="newPasswordSelf">新密码</label>
+								<input type="password" class="form-control" id="newPasswordSelf" name="newPassword" maxlength="16" ng-required="changePassword" ng-pattern="/^\w+$/" ng-model="self.newPassword" />
+								<span class="glyphicon form-control-feedback" ng-class="{true:'glyphicon-remove',false:'glyphicon-ok'}[selfForm.newPassword.$invalid]"></span>
+								<p class="help-block" ng-show="selfForm.newPassword.$invalid">必填项，只允许数字、英文和下划线</p>
+							</div>
+							<div class="form-group has-feedback" ng-class="{true:'has-error',false:'has-success'}[selfForm.againPassword.$invalid||self.newPassword!=self.againPassword]" ng-show="changePassword">
+								<label for="againPasswordSelf">确认密码</label>
+								<input type="password" class="form-control" id="againPasswordSelf" name="againPassword" maxlength="16" ng-required="changePassword" ng-pattern="/^\w+$/" ng-model="self.againPassword" />
+								<span class="glyphicon form-control-feedback" ng-class="{true:'glyphicon-remove',false:'glyphicon-ok'}[selfForm.againPassword.$invalid||self.newPassword!=self.againPassword]"></span>
+								<p class="help-block" ng-show="selfForm.againPassword.$invalid||self.newPassword!=self.againPassword">必填项，注意要与新密码一致</p>
+							</div>
+							<div class="form-group has-feedback" ng-class="{true:'has-error'}[selfForm.validCode.$invalid]">
+								<label for="validCodeSelf">验证码</label>
+								<div class="input-group">
+									<input type="text" class="form-control" id="validCodeSelf" name="validCode" maxlength="5" minlength="5" required ng-model="self.validCode" />
+									<div class="input-group-addon" title="看不清，换一张" ng-click="changeValidCode()">
+										<img src="kaptcha.jpg?timestamp={{timestamp}}" alt="验证码" width="80" height="20" />
+									</div>
+								</div>
+								<p class="help-block" ng-show="selfForm.validCode.$invalid">必填项，请输入5位验证码</p>
+							</div>
+						</form>
+					</div>
+					<div class="modal-footer">
+						<button type="button" class="btn btn-warning" ng-show="changePassword" ng-click="toggleChangePassword()">取消修改密码</button>
+						<button type="button" class="btn btn-danger" ng-hide="changePassword" ng-click="toggleChangePassword()">修改密码</button>
+						<button type="button" class="btn btn-primary" ng-disabled="selfForm.$invalid" ng-click="saveSelf()">保存</button>
+						<button type="button" class="btn btn-default" data-dismiss="modal">取消</button>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<script type="text/javascript" src="plugins/angularjs/angular.min.js"></script>
+		<script type="text/javascript" src="plugins/angularjs/angular-route.min.js"></script>
+		<script type="text/javascript" src="plugins/jquery/jquery-1.11.3.min.js"></script>
+		<script type="text/javascript" src="plugins/bootstrap-3.3.2/js/bootstrap.min.js"></script>
+		<script type="text/javascript" src="plugins/security/md5.js"></script>
+		<script type="text/javascript" src="js/main.js"></script>
+		<script type="text/javascript" src="js/view/welcome.js"></script>
+		<script type="text/javascript" src="js/view/user.js"></script>
+		<script type="text/javascript" src="js/view/billforin.js"></script>
+		<script type="text/javascript" src="js/view/billforout.js"></script>
+		<script type="text/javascript" src="js/view/apply.js"></script>
+		<script type="text/javascript" src="js/view/review.js"></script>
+		<script type="text/javascript" src="js/view/pay.js"></script>
+		<script type="text/javascript" src="js/view/about.js"></script>
+	</body>
+</html>
+<!-- By Ming -->

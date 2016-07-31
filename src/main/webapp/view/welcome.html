@@ -1,0 +1,11 @@
+<div class="row">
+	<div class="col-md-12">
+		<div class="jumbotron">
+			<h1>欢迎使用财务管理系统</h1>
+			<p>您好，<strong ng-bind="userName">超级管理员</strong></p>
+			<p ng-show="numberOfUncheck">您有<strong ng-bind="numberOfUncheck"></strong>条未审核的报账申请，合计金额<strong ng-bind="amountOfUncheck.toFixed(2)"></strong>元</p>
+			<p ng-show="numberOfUnpaid">您有<strong ng-bind="numberOfUnpaid"></strong>条未支付的报账记录，合计金额<strong ng-bind="amountOfUnpaid.toFixed(2)"></strong>元</p>
+		</div>
+	</div>
+</div>
+<!-- By Ming -->

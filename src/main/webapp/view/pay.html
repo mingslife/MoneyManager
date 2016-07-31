@@ -1,0 +1,82 @@
+<div class="row toolbar">
+	<div class="col-md-12 hidden-xs">
+		<form class="form form-inline text-right">
+			<div class="form-group">
+				<label for="payNameSearch">支付人</label>
+				<input type="text" class="form-control" id="payNameSearch" maxlength="25" ng-model="payName" />
+			</div>
+			<div class="form-group">
+				<label for="statusSearch">状态</label>
+				<select class="form-control" id="statusSearch" ng-model="status">
+					<option value=""></option>
+					<option value="0">未支付</option>
+					<option value="1">已支付</option>
+				</select>
+			</div>
+			<button class="btn btn-default search" title="搜索" ng-click="init()">
+				<span class="glyphicon glyphicon-search"></span>
+			</button>
+		</form>
+	</div>
+</div>
+<div class="row">
+	<div class="col-md-12">
+		<div class="table-responsive">
+			<table class="table table-bordered table-hover">
+				<thead>
+					<tr>
+						<th>#</th>
+						<th>日期</th>
+						<th>事项</th>
+						<th>金额（元）</th>
+						<th>支付人</th>
+						<th>状态</th>
+						<th>创建日期</th>
+						<th>备注</th>
+						<th>操作</th>
+					</tr>
+				</thead>
+				<tbody>
+					<tr ng-repeat="billForOut in billForOuts">
+						<td class="text-center" style="width:60px;max-width:60px;" title="{{(curPage-1)*limit+$index+1}}" ng-bind="(curPage-1)*limit+$index+1"></td>
+						<td class="text-center" style="width:100px;max-width:100px;" ng-bind="dateFormat(billForOut.date)"></td>
+						<td style="width:240px;max-width:240px;" title="{{billForOut.event}}" ng-bind="billForOut.event"></td>
+						<td class="text-right" style="width:100px;max-width:100px;" title="{{billForOut.amount.toFixed(2)}}" ng-bind="billForOut.amount.toFixed(2)"></td>
+						<td style="width:100px;max-width:100px;" title="{{billForOut.payName}}" ng-bind="billForOut.payName"></td>
+						<td class="text-center" style="width:90px;max-width:90px;" ng-bind="statusFormat(billForOut.status)"></td>
+						<td class="text-center" style="width:100px;max-width:100px;" ng-bind="dateFormat(billForOut.createDate)"></td>
+						<td style="width:160px;max-width:160px;" title="{{billForOut.remark}}" ng-bind="billForOut.remark"></td>
+						<td class="text-center">
+							<button class="btn btn-default btn-success btn-sm" ng-show="billForOut.status==0" ng-click="paid(billForOut.id)">已支付</button>
+							<button class="btn btn-default btn-danger btn-sm" ng-show="billForOut.status==1" ng-click="unpaid(billForOut.id)">未支付</button>
+						</td>
+					</tr>
+					<tr ng-show="!billForOuts||billForOuts.length==0">
+						<td class="text-center text-muted" colspan="9">无数据</td>
+					</tr>
+				</tbody>
+			</table>
+			<div class="text-muted sum" ng-hide="!billForOuts||billForOuts.length==0">
+				数据总数：<span ng-bind="total+'条'"></span>
+				总计金额：<span ng-bind="totalAmount.toFixed(2)+'元'"></span>
+				财务余额：<span ng-bind="totalMoney.toFixed(2)+'元'"></span>
+				<span ng-show="needMoney">距离付清还需：<span ng-bind="needMoney.toFixed(2)+'元'"></span></span>
+			</div>
+		</div>
+	</div>
+</div>
+<div class="row">
+	<div class="col-md-12">
+		<div class="btn-group pull-right" role="group" aria-label="分页">
+			<button type="button" class="btn btn-default" ng-disabled="!curPage||curPage==1||pages==0" ng-click="firstPage()">&laquo;</button>
+			<button type="button" class="btn btn-default" ng-disabled="!curPage||curPage==1||pages==0" ng-click="prevPage()">&lsaquo;</button>
+			<button type="button" class="btn btn-default" ng-class="{true:'active'}[curPage==pager[0]]" ng-bind="pager[0]" ng-show="pager[0]&&pages!=0" ng-click="changePage(pager[0])">1</button>
+			<button type="button" class="btn btn-default" ng-class="{true:'active'}[curPage==pager[1]]" ng-bind="pager[1]" ng-show="pager[1]" ng-click="changePage(pager[1])">2</button>
+			<button type="button" class="btn btn-default" ng-class="{true:'active'}[curPage==pager[2]]" ng-bind="pager[2]" ng-show="pager[2]" ng-click="changePage(pager[2])">3</button>
+			<button type="button" class="btn btn-default" ng-disabled="curPage==pages||pages==0" ng-click="nextPage()">&rsaquo;</button>
+			<button type="button" class="btn btn-default" ng-disabled="curPage==pages||pages==0" ng-click="lastPage()">&raquo;</button>
+		</div>
+		<div class="text-muted pull-right page">共<span ng-bind="pages||0"></span>页</div>
+	</div>
+</div>
+<!-- By Ming -->
